@@ -22,6 +22,7 @@ yarn dev:vite      # 终端2：renderer 热编译
 ```
 
 ### 开始菜单一键启动（本机额外配置，不在仓库内）
+
 - 脚本：`C:\Users\mingm\beekeeper-studio-dev.cmd`（每次启动前自动清理残留 electron + 释放 3003，避免冲突）
 - 快捷方式：开始菜单 `Beekeeper Studio (dev).lnk`，图标指向 `apps/studio/public/icons/win/favicon.ico`
 - 启动后：点 ✕ 只关窗口，dev 服务后台常驻；在启动终端里输入 `o` 回车可重启 Electron 重开窗口；`Ctrl+C` 停止。
@@ -29,6 +30,7 @@ yarn dev:vite      # 终端2：renderer 热编译
 ## 2. Windows 上必须的两处修复（本仓库 6.0.5）
 
 1. **`apps/studio/src-commercial/backend/lib/db/clients/anywhere/SqlAnywherePool.ts`**
+
    - 问题：模块顶层 `import sqlanywhere from 'sqlanywhere'`，utility 进程启动时经客户端注册表静态加载；Windows 缺 SAP SQL Anywhere SDK 二进制 → require 即抛错 → utility 崩溃 → 主进程无限 `UTILITY DEAD / restarting` → 永不建窗口。
    - 修复：改为惰性 `loadSqlAnywhere()`，仅真正连接 SQL Anywhere 时才 require。
 
@@ -37,6 +39,7 @@ yarn dev:vite      # 终端2：renderer 热编译
    - 修复：主动重启前先 `oldElectron.removeAllListeners('exit')`；并把 Electron 的 stdin 设为 `ignore`。
 
 ## 3. 开发模式行为改动（`main.ts` / `WindowBuilder.ts`）
+
 - `main.ts`：`window-all-closed` 在开发模式下不再 `app.quit()`（后台常驻）；生产仍关窗即退。
 - `WindowBuilder.ts`：开发模式**不再自动 `openDevTools()`**，需要时按 `F12` / `Ctrl+Shift+I` 手动开关。
 - `package.json`：`electron:serve` 的 `concurrently` 加 `--handle-input --default-input-target 0`，把终端输入路由给 esbuild；esbuild watch 监听 stdin `o` → `restartElectron()` 重开窗口。
@@ -44,6 +47,7 @@ yarn dev:vite      # 终端2：renderer 热编译
 ## 4. UI 中文化（进行中）
 
 主题/菜单/编辑器高频界面已中文化，涉及：
+
 - `common/menus/MenuBuilder.ts`、`MenuItems.ts`（菜单栏 label）
 - `components/TabQueryEditor.vue`、`CoreTabs.vue`、`ConnectionInterface.vue`
 - `connection/SaveConnectionForm.vue`、`CommonServerInputs.vue`
@@ -53,6 +57,7 @@ yarn dev:vite      # 终端2：renderer 热编译
 剩余大量英文 UI（各数据库专属表单、侧栏树右键、结果表/状态栏、查询历史、导出/备份界面等）。
 
 ## 5. 新增主题 `vs-code-dark`
+
 - 目录：`apps/studio/src/assets/styles/themes/vs-code-dark/`（`variables.scss` + `theme.scss`）
 - 挂载：`assets/styles/app.scss` 增加 `body.theme-vs-code-dark { ... }`
 - 菜单：`MenuItems.ts` 主题子菜单新增 “VS Code Dark”（label → `vs-code-dark`）
@@ -60,6 +65,7 @@ yarn dev:vite      # 终端2：renderer 热编译
 - JSON Viewer 的 key 颜色：在 `theme.scss` 中覆盖 `--bks-text-editor-propertyName-fg-color: #7fdbca`（亮青，适配 `#011627`），仅影响本主题
 
 ## 6. 其它
+
 - `store/index.ts`：实体过滤器（Tables/Views/Routines）默认 `showRoutines: false`（Routines 默认不勾选）。
 - Node 版本：`.nvmrc` 建议 `v22.22`；当前系统 node `v24` 也能跑，若原生模块出问题切到 22。
 - 常见排障：残留进程/端口占用
