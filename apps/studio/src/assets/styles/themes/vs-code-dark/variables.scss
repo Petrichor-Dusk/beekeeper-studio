@@ -1,0 +1,54 @@
+@use "sass:color";
+$material-icons-font-path: "material-icons/iconfont/";
+
+// VS Code Default Dark+ inspired palette
+$theme-bg: #011627; // main background (user supplied)
+$theme-base: #ffffff;
+$theme-primary: #007acc; // VS Code accent blue
+$theme-secondary: #569cd6; // VS Code keyword blue
+
+// Colors
+// -----------------------------
+$text-dark: #d4d4d4; // VS Code foreground
+$text: rgba($theme-base, 0.8);
+$text-light: rgba($theme-base, 0.7);
+$text-lighter: rgba($theme-base, 0.55);
+$text-hint: rgba($theme-base, 0.55);
+$text-disabled: rgba($theme-base, 0.45);
+
+$brand-info: #4ec9b0;
+$brand-success: #89d185;
+$brand-warning: #cca700;
+$brand-danger: #f48771;
+$brand-default: rgba($theme-base, 0.57);
+$brand-purple: #c586c0;
+$brand-pink: #d16969;
+$brand-primary: $theme-primary;
+$brand-secondary: $theme-secondary;
+
+// App
+$border-color: rgba($theme-base, 0.1);
+$link-color: #4ec9b0;
+$placeholder: rgba($theme-base, 0.5);
+$selection: rgba($theme-primary, 0.28);
+$input-highlight: rgba($theme-base, 0.27);
+
+$db-select-text: $theme-bg;
+$query-editor-bg: $theme-bg;
+
+$row-handle-selected: color.adjust($theme-bg, $lightness: 6%);
+$row-handle-hover: color.adjust($theme-bg, $lightness: 6%);
+
+$titlebar-bg: color.adjust($theme-bg, $lightness: 8%); // title bar (lightened)
+$global-sidebar-bg: color.adjust($theme-bg, $lightness: -2%); // activity bar
+$sidebar-bg: color.adjust($theme-bg, $lightness: 3%);
+$sidebar-heading-bg: color.adjust($theme-bg, $lightness: 5%);
+$tabs-bg: color.adjust($theme-bg, $lightness: 5%);
+$statusbar-bg: #007acc; // VS Code status bar
+$statusbar-text: #ffffff;
+$statusbar-text-default: #ffffff;
+
+$row-handle: $theme-bg;
+
+$grouped-tables-base: color.adjust($theme-bg, $lightness: 2%);
+$grouped-tables-light: color.adjust($grouped-tables-base, $lightness: 2%);

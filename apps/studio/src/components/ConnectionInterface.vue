@@ -12,7 +12,11 @@
           @create="create"
         />
       </sidebar>
-      <div ref="content" class="connection-main page-content flex-col" id="page-content">
+      <div
+        ref="content"
+        class="connection-main page-content flex-col"
+        id="page-content"
+      >
         <div class="small-wrap expand">
           <div class="card-flat padding" v-if="!isConfigReady">
             <content-placeholder-heading />
@@ -29,16 +33,16 @@
                 @click="share"
               >
                 <i class="material-icons">share</i>
-                Share
+                分享
               </button>
               <ImportButton :config="config" :disabled="editingDisabled">
-                Import from URL
+                从 URL 导入
               </ImportButton>
             </div>
-            <error-alert :error="errors" title="Please fix the following errors" />
+            <error-alert :error="errors" title="请修复以下错误" />
             <form @action="submit" v-if="config">
               <div class="form-group">
-                <label for="connection-select">Connection Type</label>
+                <label for="connection-select">连接类型</label>
                 <select
                   name="connectionType"
                   class="form-control custom-select"
@@ -46,13 +50,19 @@
                   id="connection-select"
                   :disabled="editingDisabled"
                 >
-                  <option disabled hidden value="null">
-                    Select a connection type...
-                  </option>
-                  <option :key="`${t.value}-${t.name}`" v-for="t in communityConnectionTypes" :value="t.value">
+                  <option disabled hidden value="null">选择连接类型…</option>
+                  <option
+                    :key="`${t.value}-${t.name}`"
+                    v-for="t in communityConnectionTypes"
+                    :value="t.value"
+                  >
                     {{ t.name }}
                   </option>
-                  <option :key="`${t.value}-${t.name}`" :value="t.value" v-for="t in ultimateConnectionTypes">
+                  <option
+                    :key="`${t.value}-${t.name}`"
+                    :value="t.value"
+                    v-for="t in ultimateConnectionTypes"
+                  >
                     {{ t.name }}
                   </option>
                 </select>
@@ -66,7 +76,11 @@
                   :disabled="editingDisabled"
                 />
                 <mysql-form
-                  v-else-if="['mysql', 'mariadb', 'tidb', 'starrocks'].includes(config.connectionType)"
+                  v-else-if="
+                    ['mysql', 'mariadb', 'tidb', 'starrocks'].includes(
+                      config.connectionType
+                    )
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
@@ -78,7 +92,9 @@
                   :disabled="editingDisabled"
                 />
                 <postgres-form
-                  v-else-if="['postgresql', 'greengage'].includes(config.connectionType)"
+                  v-else-if="
+                    ['postgresql', 'greengage'].includes(config.connectionType)
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
@@ -121,13 +137,18 @@
                   :disabled="editingDisabled"
                 />
                 <cassandra-form
-                  v-if="['cassandra', 'scylladb'].includes(config.connectionType) && isUltimate"
+                  v-if="
+                    ['cassandra', 'scylladb'].includes(config.connectionType) &&
+                    isUltimate
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
                 />
                 <click-house-form
-                  v-else-if="config.connectionType === 'clickhouse' && isUltimate"
+                  v-else-if="
+                    config.connectionType === 'clickhouse' && isUltimate
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
@@ -157,13 +178,17 @@
                   :disabled="editingDisabled"
                 />
                 <sql-anywhere-form
-                  v-else-if="config.connectionType === 'sqlanywhere' && isUltimate"
+                  v-else-if="
+                    config.connectionType === 'sqlanywhere' && isUltimate
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
                 />
                 <surreal-db-form
-                  v-else-if="config.connectionType === 'surrealdb' && isUltimate"
+                  v-else-if="
+                    config.connectionType === 'surrealdb' && isUltimate
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
@@ -181,7 +206,9 @@
                   :disabled="editingDisabled"
                 />
                 <snowflake-form
-                  v-else-if="config.connectionType === 'snowflake' && isUltimate"
+                  v-else-if="
+                    config.connectionType === 'snowflake' && isUltimate
+                  "
                   :config="config"
                   :testing="testing"
                   :disabled="editingDisabled"
@@ -197,9 +224,14 @@
                       type="checkbox"
                       name="readOnlyMode"
                       v-model="config.readOnlyMode"
+                    />
+                    <span>只读模式</span>
+                    <i
+                      v-if="!isUltimate"
+                      v-tooltip="'升级以使用只读模式'"
+                      class="material-icons"
+                      >stars</i
                     >
-                    <span>Read Only Mode</span>
-                    <i v-if="!isUltimate" v-tooltip="'Upgrade to use Read Only Mode'" class="material-icons">stars</i>
                     <!-- <i class="material-icons" v-tooltip="'Limited to '">help_outlined</i> -->
                   </label>
                 </div>
@@ -213,7 +245,7 @@
                       type="button"
                       @click.prevent="testConnection"
                     >
-                      Test
+                      测试
                     </button>
                     <button
                       :disabled="testing || connecting"
@@ -221,7 +253,7 @@
                       type="submit"
                       @click.prevent="submit"
                     >
-                      Connect
+                      连接
                     </button>
                   </div>
                 </div>
@@ -256,79 +288,121 @@
           />
           <template v-if="!config.connectionType">
             <div class="pitch" v-if="!isUltimate">
-              🌟 <strong>Upgrade</strong> to access the JSON sidebar, AI shell, robust import/export and much more!
-              <a href="https://beekeeperstudio.io/pricing" class="">Upgrade</a>.
+              🌟 <strong>升级</strong> 以使用 JSON 侧栏、AI
+              Shell、强大的导入导出等更多功能！
+              <a href="https://beekeeperstudio.io/pricing" class="">升级</a>.
             </div>
             <div class="pitch" v-else-if="isTrial">
-              🌟 <strong>Trial expires {{ $bks.timeAgo(trialLicense.validUntil) }}</strong> Upgrade now to make sure you
-              don't lose access.
-              <a href="https://beekeeperstudio.io/pricing" class="">Upgrade</a>.
+              🌟
+              <strong
+                >试用将于
+                {{ $bks.timeAgo(trialLicense.validUntil) }} 到期</strong
+              >，立即升级以免失去访问权限。
+              <a href="https://beekeeperstudio.io/pricing" class="">升级</a>。
             </div>
             <div class="pitch" v-else>
-              🌟 <strong>AI Shell</strong> - Let an LLM explore your database and write SQL for you. Bring your own API key. Simply open a new tab to get started.
-              <a href="https://www.beekeeperstudio.io/features/sql-ai">Learn more</a>
+              🌟 <strong>AI Shell</strong> ——
+              让大语言模型探索你的数据库并为你编写 SQL。使用你自己的 API
+              Key，打开一个新标签即可开始。
+              <a href="https://www.beekeeperstudio.io/features/sql-ai"
+                >了解更多</a
+              >
             </div>
           </template>
         </div>
 
         <small class="app-version">
-          <a href="https://www.beekeeperstudio.io/releases/latest">Beekeeper Studio {{ version }}</a>
+          <a href="https://www.beekeeperstudio.io/releases/latest"
+            >Beekeeper Studio {{ version }}</a
+          >
         </small>
       </div>
     </div>
-    <loading-sso-modal v-model="loadingSSOModalOpened" @cancel="loadingSSOCanceled" />
+    <loading-sso-modal
+      v-model="loadingSSOModalOpened"
+      @cancel="loadingSSOCanceled"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import ConnectionSidebar from './sidebar/ConnectionSidebar.vue'
-import MysqlForm from './connection/MysqlForm.vue'
-import BedrockForm from './connection/BedrockForm.vue'
-import PostgresForm from './connection/PostgresForm.vue'
-import RedshiftForm from './connection/RedshiftForm.vue'
-import Sidebar from './common/Sidebar.vue'
-import SqliteForm from './connection/SqliteForm.vue'
-import SqlServerForm from './connection/SqlServerForm.vue'
-import SaveConnectionForm from './connection/SaveConnectionForm.vue'
-import BigQueryForm from './connection/BigQueryForm.vue'
-import FirebirdForm from './connection/FirebirdForm.vue'
-import ClickHouseForm from './connection/ClickHouseForm.vue'
-import LibSQLForm from './connection/LibSQLForm.vue'
-import CassandraForm from './connection/CassandraForm.vue'
-import OracleForm from './connection/OracleForm.vue'
-import MongoDbForm from './connection/MongoDBForm.vue'
-import DuckDbForm from './connection/DuckDBForm.vue'
-import SqlAnywhereForm from './connection/SqlAnywhereForm.vue'
-import TrinoForm from './connection/TrinoForm.vue'
-import SurrealDbForm from './connection/SurrealDBForm.vue'
-import RedisForm from './connection/RedisForm.vue'
-import DynamoDbForm from './connection/DynamoDBForm.vue'
-import SnowflakeForm from './connection/SnowflakeForm.vue'
-import Split from 'split.js'
-import ImportButton from './connection/ImportButton.vue'
-import LoadingSSOModal from '@/components/common/modals/LoadingSSOModal.vue'
-import _ from 'lodash'
-import ErrorAlert from './common/ErrorAlert.vue'
-import rawLog from '@bksLogger'
-import { mapGetters, mapState } from 'vuex'
-import { dialectFor } from '@shared/lib/dialects/models'
-import { escapeHtml } from '@shared/lib/tabulator'
-import { findClient } from '@/lib/db/clients'
-import { AzureAuthType } from '@/lib/db/types'
-import UpgradePanel from '@/components/upsell/UpgradePanel.vue'
-import Vue from 'vue'
-import { AppEvent } from '@/common/AppEvent'
-import { isUltimateType } from '@/common/interfaces/IConnection'
-import { SmartLocalStorage } from '@/common/LocalStorage'
-import ContentPlaceholderHeading from '@/components/common/loading/ContentPlaceholderHeading.vue'
-import { FriendlyErrorHelper } from '@/frontend/utils/FriendlyErrorHelper'
-import PrivacyBanner from './PrivacyBanner.vue'
+import ConnectionSidebar from "./sidebar/ConnectionSidebar.vue";
+import MysqlForm from "./connection/MysqlForm.vue";
+import BedrockForm from "./connection/BedrockForm.vue";
+import PostgresForm from "./connection/PostgresForm.vue";
+import RedshiftForm from "./connection/RedshiftForm.vue";
+import Sidebar from "./common/Sidebar.vue";
+import SqliteForm from "./connection/SqliteForm.vue";
+import SqlServerForm from "./connection/SqlServerForm.vue";
+import SaveConnectionForm from "./connection/SaveConnectionForm.vue";
+import BigQueryForm from "./connection/BigQueryForm.vue";
+import FirebirdForm from "./connection/FirebirdForm.vue";
+import ClickHouseForm from "./connection/ClickHouseForm.vue";
+import LibSQLForm from "./connection/LibSQLForm.vue";
+import CassandraForm from "./connection/CassandraForm.vue";
+import OracleForm from "./connection/OracleForm.vue";
+import MongoDbForm from "./connection/MongoDBForm.vue";
+import DuckDbForm from "./connection/DuckDBForm.vue";
+import SqlAnywhereForm from "./connection/SqlAnywhereForm.vue";
+import TrinoForm from "./connection/TrinoForm.vue";
+import SurrealDbForm from "./connection/SurrealDBForm.vue";
+import RedisForm from "./connection/RedisForm.vue";
+import DynamoDbForm from "./connection/DynamoDBForm.vue";
+import SnowflakeForm from "./connection/SnowflakeForm.vue";
+import Split from "split.js";
+import ImportButton from "./connection/ImportButton.vue";
+import LoadingSSOModal from "@/components/common/modals/LoadingSSOModal.vue";
+import _ from "lodash";
+import ErrorAlert from "./common/ErrorAlert.vue";
+import rawLog from "@bksLogger";
+import { mapGetters, mapState } from "vuex";
+import { dialectFor } from "@shared/lib/dialects/models";
+import { escapeHtml } from "@shared/lib/tabulator";
+import { findClient } from "@/lib/db/clients";
+import { AzureAuthType } from "@/lib/db/types";
+import UpgradePanel from "@/components/upsell/UpgradePanel.vue";
+import Vue from "vue";
+import { AppEvent } from "@/common/AppEvent";
+import { isUltimateType } from "@/common/interfaces/IConnection";
+import { SmartLocalStorage } from "@/common/LocalStorage";
+import ContentPlaceholderHeading from "@/components/common/loading/ContentPlaceholderHeading.vue";
+import { FriendlyErrorHelper } from "@/frontend/utils/FriendlyErrorHelper";
+import PrivacyBanner from "./PrivacyBanner.vue";
 
-const log = rawLog.scope('ConnectionInterface')
+const log = rawLog.scope("ConnectionInterface");
 // import ImportUrlForm from './connection/ImportUrlForm';
 
 export default Vue.extend({
-  components: { ConnectionSidebar, MysqlForm, BedrockForm, PostgresForm, RedshiftForm, CassandraForm, Sidebar, SqliteForm, SqlServerForm, SaveConnectionForm, ImportButton, ErrorAlert, OracleForm, BigQueryForm, FirebirdForm, UpgradePanel, LibSqlForm: LibSQLForm, LoadingSsoModal: LoadingSSOModal, ClickHouseForm, TrinoForm, MongoDbForm, DuckDbForm, SqlAnywhereForm, RedisForm, DynamoDbForm, ContentPlaceholderHeading, SurrealDbForm, PrivacyBanner, SnowflakeForm
+  components: {
+    ConnectionSidebar,
+    MysqlForm,
+    BedrockForm,
+    PostgresForm,
+    RedshiftForm,
+    CassandraForm,
+    Sidebar,
+    SqliteForm,
+    SqlServerForm,
+    SaveConnectionForm,
+    ImportButton,
+    ErrorAlert,
+    OracleForm,
+    BigQueryForm,
+    FirebirdForm,
+    UpgradePanel,
+    LibSqlForm: LibSQLForm,
+    LoadingSsoModal: LoadingSSOModal,
+    ClickHouseForm,
+    TrinoForm,
+    MongoDbForm,
+    DuckDbForm,
+    SqlAnywhereForm,
+    RedisForm,
+    DynamoDbForm,
+    ContentPlaceholderHeading,
+    SurrealDbForm,
+    PrivacyBanner,
+    SnowflakeForm,
   },
 
   data() {
@@ -347,17 +421,17 @@ export default Vue.extend({
       loadingSSOModalOpened: false,
       version: this.$config.appVersion,
       isConfigReady: false,
-    }
+    };
   },
   computed: {
-    ...mapState(['workspaceId', 'connection', 'sshConfigWarnings']),
-    ...mapState(['username']),
-    ...mapState('data/connections', { 'connections': 'items' }),
-    ...mapState('data/connectionFolders', { connectionFolders: 'items' }),
-    ...mapGetters(['isUltimate', 'isCloud']),
-    ...mapGetters('licenses', ['isTrial', 'trialLicense']),
+    ...mapState(["workspaceId", "connection", "sshConfigWarnings"]),
+    ...mapState(["username"]),
+    ...mapState("data/connections", { connections: "items" }),
+    ...mapState("data/connectionFolders", { connectionFolders: "items" }),
+    ...mapGetters(["isUltimate", "isCloud"]),
+    ...mapGetters("licenses", ["isTrial", "trialLicense"]),
     ...mapGetters({
-      privacyMode: 'settings/privacyMode'
+      privacyMode: "settings/privacyMode",
     }),
     editingDisabled() {
       if (!this.isCloud) {
@@ -366,165 +440,192 @@ export default Vue.extend({
       return !this.config.canWrite;
     },
     communityConnectionTypes() {
-      return this.$config.defaults.connectionTypes.filter((ct) => !isUltimateType(ct.value))
+      return this.$config.defaults.connectionTypes.filter(
+        (ct) => !isUltimateType(ct.value)
+      );
     },
     ultimateConnectionTypes() {
-      return this.$config.defaults.connectionTypes.filter((ct) => isUltimateType(ct.value)).map((ct) => ({ ...ct, name: `${ct.name}*`}))
+      return this.$config.defaults.connectionTypes
+        .filter((ct) => isUltimateType(ct.value))
+        .map((ct) => ({ ...ct, name: `${ct.name}*` }));
     },
     connectionTypes() {
-      return this.$config.defaults.connectionTypes
+      return this.$config.defaults.connectionTypes;
     },
     friendlyConnectionType() {
-      return this.$config.defaults.connectionTypes.find((ct) => ct.value === this.config?.connectionType)?.name ?? "Premium"
+      return (
+        this.$config.defaults.connectionTypes.find(
+          (ct) => ct.value === this.config?.connectionType
+        )?.name ?? "Premium"
+      );
     },
     shouldUpsell() {
-      if (this.isUltimate) return false
-      return isUltimateType(this.config.connectionType)
+      if (this.isUltimate) return false;
+      return isUltimateType(this.config.connectionType);
     },
     isNewConnection() {
       return _.isNil(this.config) || _.isNil(this.config.id);
     },
     pageTitle() {
       if (this.isNewConnection) {
-        return "New Connection"
+        return "New Connection";
       } else {
-        return this.config.name
+        return this.config.name;
       }
     },
     dialect() {
-      return dialectFor(this.config.connectionType)
+      return dialectFor(this.config.connectionType);
     },
     determineLabelColor() {
-      return this.config.labelColor == "default" ? '' : `connection-label-color-${this.config.labelColor}`
+      return this.config.labelColor == "default"
+        ? ""
+        : `connection-label-color-${this.config.labelColor}`;
     },
     folder() {
-      return this.connectionFolders.find((f) => f.id === this.config.connectionFolderId);
+      return this.connectionFolders.find(
+        (f) => f.id === this.config.connectionFolderId
+      );
     },
     isPersonal() {
       return this.folder?.personal;
     },
     rootBindings() {
-      return [
-        { event: AppEvent.dropzoneDrop, handler: this.maybeLoadSqlite },
-      ]
+      return [{ event: AppEvent.dropzoneDrop, handler: this.maybeLoadSqlite }];
     },
   },
   watch: {
     sshConfigWarnings(warnings) {
-      this.notifySshConfigWarnings(warnings)
+      this.notifySshConfigWarnings(warnings);
     },
     workspaceId() {
-      this.$util.send('appdb/saved/new').then((conn) => {
+      this.$util.send("appdb/saved/new").then((conn) => {
         this.config = conn;
-      })
+      });
     },
     config: {
       deep: true,
       handler() {
-        this.connectionError = null
-      }
+        this.connectionError = null;
+      },
     },
-    'config.connectionType'(newConnectionType) {
-      if (newConnectionType == null) return
-      this.$util.send('appdb/saved/new', { init: { connectionType: newConnectionType }}).then((conn) => {
-        // only replace it if it's a blank, unused connection
-        if (!this.config.id && !this.config.password && !this.config.username) {
-          this.config = conn;
-        }
-        if (!findClient(newConnectionType)?.supportsSocketPath) {
-          this.config.socketPathEnabled = false
-        }
-      })
+    "config.connectionType"(newConnectionType) {
+      if (newConnectionType == null) return;
+      this.$util
+        .send("appdb/saved/new", {
+          init: { connectionType: newConnectionType },
+        })
+        .then((conn) => {
+          // only replace it if it's a blank, unused connection
+          if (
+            !this.config.id &&
+            !this.config.password &&
+            !this.config.username
+          ) {
+            this.config = conn;
+          }
+          if (!findClient(newConnectionType)?.supportsSocketPath) {
+            this.config.socketPathEnabled = false;
+          }
+        });
     },
     connectionError() {
-
       if (this.connectionError) {
-        const friendlyHelp = FriendlyErrorHelper.getHelpText(this.config.connectionType, this.connectionError)
-        this.errorHelp = friendlyHelp?.help
-        this.errorLink = friendlyHelp?.link
+        const friendlyHelp = FriendlyErrorHelper.getHelpText(
+          this.config.connectionType,
+          this.connectionError
+        );
+        this.errorHelp = friendlyHelp?.help;
+        this.errorLink = friendlyHelp?.link;
       } else {
-        this.errorHelp = null
-        this.errorLink = null
+        this.errorHelp = null;
+        this.errorLink = null;
       }
-    }
+    },
   },
   async mounted() {
-    this.registerHandlers(this.rootBindings)
-    const components = [
-      this.$refs.sidebar.$refs.sidebar,
-      this.$refs.content
-    ]
-    const lastSavedSplitSizes = SmartLocalStorage.getItem("interfaceSplitSizes")
-    const splitSizes = lastSavedSplitSizes ? JSON.parse(lastSavedSplitSizes) : [25, 75]
+    this.registerHandlers(this.rootBindings);
+    const components = [this.$refs.sidebar.$refs.sidebar, this.$refs.content];
+    const lastSavedSplitSizes = SmartLocalStorage.getItem(
+      "interfaceSplitSizes"
+    );
+    const splitSizes = lastSavedSplitSizes
+      ? JSON.parse(lastSavedSplitSizes)
+      : [25, 75];
 
     this.split = Split(components, {
       elementStyle: (_dimension, size) => ({
-        'flex-basis': `calc(${size}%)`,
+        "flex-basis": `calc(${size}%)`,
       }),
       sizes: splitSizes,
       gutterize: 8,
       minSize: [25, 75],
       expandToMin: true,
       onDragEnd: () => {
-        const splitSizes = this.split.getSizes()
-        SmartLocalStorage.addItem("interfaceSplitSizes", splitSizes)
-      }
-    } as Split.Options)
+        const splitSizes = this.split.getSizes();
+        SmartLocalStorage.addItem("interfaceSplitSizes", splitSizes);
+      },
+    } as Split.Options);
 
     try {
       if (!this.$store.getters.workspace) {
-        await this.$store.commit('workspace', this.$store.state.localWorkspace)
+        await this.$store.commit("workspace", this.$store.state.localWorkspace);
       }
-      const conn = await this.$util.send('appdb/saved/new')
-      conn.sshUsername = this.username
+      const conn = await this.$util.send("appdb/saved/new");
+      conn.sshUsername = this.username;
       this.config = conn;
     } catch (e) {
-      log.error(e)
-      this.$noty.error(e.message)
+      log.error(e);
+      this.$noty.error(e.message);
     } finally {
       this.isConfigReady = true;
     }
 
-    await this.$store.dispatch('pinnedConnections/loadPins')
-    await this.$store.dispatch('pinnedConnections/reorder')
-    await this.$store.dispatch('credentials/load')
+    await this.$store.dispatch("pinnedConnections/loadPins");
+    await this.$store.dispatch("pinnedConnections/reorder");
+    await this.$store.dispatch("credentials/load");
   },
   beforeDestroy() {
     if (this.split) {
-      this.split.destroy()
+      this.split.destroy();
     }
-    this.unregisterHandlers(this.rootBindings)
+    this.unregisterHandlers(this.rootBindings);
   },
   methods: {
     // Surface non-fatal ~/.ssh/config issues (untrusted/invalid config, missing
     // IdentityFile) as a single formatted warning toast.
     notifySshConfigWarnings(warnings) {
-      if (!warnings || warnings.length === 0) return
-      const escaped = warnings.map((w) => escapeHtml(w))
-      const body = escaped.length === 1
-        ? `<strong>SSH config</strong><br>${escaped[0]}`
-        : `<strong>SSH config warnings</strong><ul class="noty-warning-list">${escaped.map((w) => `<li>${w}</li>`).join('')}</ul>`
-      this.$noty.warning(body, { timeout: 8000, allowRawHtml: true })
+      if (!warnings || warnings.length === 0) return;
+      const escaped = warnings.map((w) => escapeHtml(w));
+      const body =
+        escaped.length === 1
+          ? `<strong>SSH config</strong><br>${escaped[0]}`
+          : `<strong>SSH config warnings</strong><ul class="noty-warning-list">${escaped
+              .map((w) => `<li>${w}</li>`)
+              .join("")}</ul>`;
+      this.$noty.warning(body, { timeout: 8000, allowRawHtml: true });
     },
     async maybeLoadSqlite({ files }) {
       // cast to an array
-      if (!files || !files.length) return
+      if (!files || !files.length) return;
       if (!this.config) return;
       // we only load the first
-      const file = files[0]
+      const file = files[0];
       try {
-        const conf = await this.$util.send('appdb/saved/parseUrl', { url: file.path });
+        const conf = await this.$util.send("appdb/saved/parseUrl", {
+          url: file.path,
+        });
         this.config = conf;
         this.submit();
       } catch {
-        this.$noty.error(`Unable to open '${file.name}'. It is not a valid SQLite file.`);
+        this.$noty.error(
+          `Unable to open '${file.name}'. It is not a valid SQLite file.`
+        );
       }
-
     },
     create() {
-      this.$util.send('appdb/saved/new').then((conn) => {
+      this.$util.send("appdb/saved/new").then((conn) => {
         this.config = conn;
-      })
+      });
     },
     /*
       The CoreInterface should ONLY ever receive a `SavedConnection`, not a `UsedConnection`.
@@ -536,141 +637,167 @@ export default Vue.extend({
     async configFrom(config) {
       // Hacky way to determine we have a `SavedConnection` already.
       // The form edits a copy, never the sidebar's own object.
-      if (_.isUndefined(config.connectionId)) return _.clone(config)
+      if (_.isUndefined(config.connectionId)) return _.clone(config);
 
-      const init = _.omit(config, ['id', 'connectionId', 'createdAt', 'updatedAt', 'version'])
-      const unsaved = await this.$util.send('appdb/saved/new', { init })
-      unsaved.id = null
-      return unsaved
+      const init = _.omit(config, [
+        "id",
+        "connectionId",
+        "createdAt",
+        "updatedAt",
+        "version",
+      ]);
+      const unsaved = await this.$util.send("appdb/saved/new", { init });
+      unsaved.id = null;
+      return unsaved;
     },
     async edit(config) {
-      this.config = await this.configFrom(config)
-      this.errors = null
-      this.connectionError = null
+      this.config = await this.configFrom(config);
+      this.errors = null;
+      this.connectionError = null;
     },
     async remove(config) {
-      if (!await this.$confirm(`Delete "${config.name}"?`, undefined, { variant: "danger" })) {
-        return
+      if (
+        !(await this.$confirm(`Delete "${config.name}"?`, undefined, {
+          variant: "danger",
+        }))
+      ) {
+        return;
       }
       // the form holds a copy of the connection, never the row itself
-      if (this.config?.id === config.id && this.config?.workspaceId === config.workspaceId) {
-        this.config = await this.$util.send('appdb/saved/new');
+      if (
+        this.config?.id === config.id &&
+        this.config?.workspaceId === config.workspaceId
+      ) {
+        this.config = await this.$util.send("appdb/saved/new");
       }
       if (config.azureAuthOptions?.authId) {
-        await this.$util.send('appdb/cache/remove', { authId: config.azureAuthOptions.authId });
+        await this.$util.send("appdb/cache/remove", {
+          authId: config.azureAuthOptions.authId,
+        });
       }
-      await this.$store.dispatch('pinnedConnections/remove', config)
-      await this.$store.dispatch('data/connections/remove', config)
-      this.$noty.success(`${config.name} deleted`)
+      await this.$store.dispatch("pinnedConnections/remove", config);
+      await this.$store.dispatch("data/connections/remove", config);
+      this.$noty.success(`${config.name} deleted`);
     },
     async duplicate(config) {
       // Duplicates ES 6 class of the connection, without any reference to the old one.
-      const duplicateConfig = await this.$store.dispatch('data/connections/clone', config)
-      duplicateConfig.name = 'Copy of ' + duplicateConfig.name
+      const duplicateConfig = await this.$store.dispatch(
+        "data/connections/clone",
+        config
+      );
+      duplicateConfig.name = "Copy of " + duplicateConfig.name;
 
       try {
-        const id = await this.$store.dispatch('data/connections/save', duplicateConfig)
-        this.$noty.success(`The connection was successfully duplicated!`)
-        this.config = this.connections.find((c) => c.id === id) || this.config
+        const id = await this.$store.dispatch(
+          "data/connections/save",
+          duplicateConfig
+        );
+        this.$noty.success(`The connection was successfully duplicated!`);
+        this.config = this.connections.find((c) => c.id === id) || this.config;
       } catch (ex) {
-        this.$noty.error(`Could not duplicate Connection: ${ex.message}`)
+        this.$noty.error(`Could not duplicate Connection: ${ex.message}`);
       }
-
     },
     async submit() {
       if (!this.isUltimate && isUltimateType(this.config.connectionType)) {
-        return
+        return;
       }
 
-      this.beforeConnect()
-      this.connectionError = null
+      this.beforeConnect();
+      this.connectionError = null;
       try {
-        this.connecting = true
+        this.connecting = true;
         const { auth, cancelled } = await this.$bks.unlock();
         if (cancelled) return;
-        await this.$store.dispatch('connect', { config: this.config, auth })
+        await this.$store.dispatch("connect", { config: this.config, auth });
       } catch (ex) {
-        console.log("CONNECTION ERROR", ex)
-        this.connectionError = ex
-        this.$noty.error("Error establishing a connection")
-        log.error(ex)
+        console.log("CONNECTION ERROR", ex);
+        this.connectionError = ex;
+        this.$noty.error("Error establishing a connection");
+        log.error(ex);
       } finally {
-        this.connecting = false
-        this.afterConnect()
+        this.connecting = false;
+        this.afterConnect();
       }
     },
     async handleConnect(config) {
-      this.config = await this.configFrom(config)
-      await this.submit()
+      this.config = await this.configFrom(config);
+      await this.submit();
     },
     async testConnection() {
       if (!this.isUltimate && isUltimateType(this.config.connectionType)) {
-        return
+        return;
       }
 
-      this.beforeConnect()
+      this.beforeConnect();
 
       try {
-        this.testing = true
-        this.connectionError = null
-        const connected = await this.$store.dispatch('test', this.config)
-        if (!connected) return false
-        this.$noty.success("Connection looks good!")
-        return true
+        this.testing = true;
+        this.connectionError = null;
+        const connected = await this.$store.dispatch("test", this.config);
+        if (!connected) return false;
+        this.$noty.success("Connection looks good!");
+        return true;
       } catch (ex) {
-        this.connectionError = ex
-        this.$noty.error("Error establishing a connection")
+        this.connectionError = ex;
+        this.$noty.error("Error establishing a connection");
       } finally {
-        this.testing = false
-        this.afterConnect()
+        this.testing = false;
+        this.afterConnect();
       }
     },
     async save() {
       try {
-        this.errors = null
-        this.connectionError = null
+        this.errors = null;
+        this.connectionError = null;
         if (!this.config.name) {
-          throw new Error("Name is required")
+          throw new Error("Name is required");
         }
         // create token cache for azure auth
-        if (this.config.azureAuthOptions?.azureAuthEnabled && !this.config.authId) {
-          const cacheId = await this.$util.send('appdb/cache/new');
+        if (
+          this.config.azureAuthOptions?.azureAuthEnabled &&
+          !this.config.authId
+        ) {
+          const cacheId = await this.$util.send("appdb/cache/new");
           this.config.authId = cacheId;
         }
 
-        const id = await this.$store.dispatch('data/connections/save', this.config)
+        const id = await this.$store.dispatch(
+          "data/connections/save",
+          this.config
+        );
 
-        this.$noty.success("Connection Saved")
+        this.$noty.success("Connection Saved");
         // we want to fetch the saved one in case it's changed
-        const connection = this.connections.find((c) => c.id === id)
-        this.edit(connection)
+        const connection = this.connections.find((c) => c.id === id);
+        this.edit(connection);
       } catch (ex) {
-        console.error(ex)
-        this.errors = [ex.message]
-        this.$noty.error("Could not save connection information")
+        console.error(ex);
+        this.errors = [ex.message];
+        this.$noty.error("Could not save connection information");
       }
     },
     handleErrorMessage(message) {
       if (message) {
-        this.errors = [message]
-        this.$noty.error("Could not parse connection URL.")
+        this.errors = [message];
+        this.$noty.error("Could not parse connection URL.");
       } else {
-        this.errors = null
+        this.errors = null;
       }
     },
     // Before running connect/test method
     beforeConnect() {
       if (
-        this.config.connectionType === 'sqlserver' &&
+        this.config.connectionType === "sqlserver" &&
         this.config.azureAuthOptions.azureAuthEnabled &&
         this.config.azureAuthOptions.azureAuthType === AzureAuthType.AccessToken
       ) {
-        this.loadingSSOModalOpened = true
+        this.loadingSSOModalOpened = true;
       }
     },
     // After running connect/test method, success or fail
     afterConnect() {
-      this.loadingSSOModalOpened = false
+      this.loadingSSOModalOpened = false;
     },
     loadingSSOCanceled() {
       this.connection.azureCancelAuth();
@@ -682,7 +809,7 @@ export default Vue.extend({
       });
     },
   },
-})
+});
 </script>
 
 <style scoped>

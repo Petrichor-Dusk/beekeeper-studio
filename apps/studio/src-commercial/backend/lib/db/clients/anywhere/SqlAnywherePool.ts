@@ -1,9 +1,21 @@
-import sqlanywhere from 'sqlanywhere';
-import { promisify } from 'util';
-import rawLog from '@bksLogger';
-import _ from 'lodash';
+import { promisify } from "util";
+import rawLog from "@bksLogger";
+import _ from "lodash";
 
-const log = rawLog.scope('SqlAnywherePool');
+const log = rawLog.scope("SqlAnywherePool");
+
+// The `sqlanywhere` native driver needs SAP SQL Anywhere client libraries,
+// which may not be installed on every machine (e.g. a plain Windows dev box).
+// Requiring it eagerly at module scope would crash the whole utility process
+// on startup, so load it lazily only when a SQL Anywhere connection is
+// actually being created.
+let _sqlanywhere: any = null;
+function loadSqlAnywhere(): any {
+  if (_sqlanywhere) return _sqlanywhere;
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  _sqlanywhere = require("sqlanywhere");
+  return _sqlanywhere;
+}
 
 export class SqlAnywhereConn {
   config: any;
@@ -13,14 +25,14 @@ export class SqlAnywhereConn {
 
   constructor(config, pool: SqlAnywherePool) {
     this.config = config;
-    this.rawConnection = sqlanywhere.createConnection();
+    this.rawConnection = loadSqlAnywhere().createConnection();
     this.pool = pool;
   }
 
   async connect() {
-    await promisify(
-      this.rawConnection.connect.bind(this.rawConnection)
-    )(this.config);
+    await promisify(this.rawConnection.connect.bind(this.rawConnection))(
+      this.config
+    );
     const id = await this.query(`SELECT CONNECTION_PROPERTY('Number') AS id`);
     if (id && _.isArray(id)) {
       this.connectionId = id[0]?.id;
@@ -47,9 +59,7 @@ export class SqlAnywhereConn {
       this.rawConnection.exec.bind(this.rawConnection)
     )(query);
     if (autoCommit) {
-      await promisify(
-        this.rawConnection.commit.bind(this.rawConnection)
-      )();
+      await promisify(this.rawConnection.commit.bind(this.rawConnection))();
     }
     return results;
   }
@@ -82,7 +92,7 @@ export class SqlAnywherePool {
     // try to reuse an available connection
     for (const p of this.pool) {
       if (!this.inUse.has(p)) {
-        log.info('Reusing connection', p.connectionId);
+        log.info("Reusing connection", p.connectionId);
         this.inUse.add(p);
         return p;
       }
@@ -92,7 +102,7 @@ export class SqlAnywherePool {
     if (this.pool.length < this.maxSize) {
       const pConn = new SqlAnywhereConn(this.config, this);
       await pConn.connect();
-      log.info('Acquiring new connection', pConn.connectionId);
+      log.info("Acquiring new connection", pConn.connectionId);
       this.pool.push(pConn);
       this.inUse.add(pConn);
       return pConn;
@@ -100,11 +110,11 @@ export class SqlAnywherePool {
 
     // wait for a connection to be released
     return new Promise((resolve) => {
-      log.info('Waiting for new connection to be available')
+      log.info("Waiting for new connection to be available");
       const interval = setInterval(() => {
         for (const p of this.pool) {
           if (!this.inUse.has(p)) {
-            log.info('Reusing connection', p.connectionId);
+            log.info("Reusing connection", p.connectionId);
             this.inUse.add(p);
             clearInterval(interval);
             resolve(p);
@@ -112,7 +122,7 @@ export class SqlAnywherePool {
           }
         }
       }, 100);
-    })
+    });
   }
 
   async remove(conn: SqlAnywhereConn) {
@@ -123,7 +133,7 @@ export class SqlAnywherePool {
   }
 
   async release(conn: SqlAnywhereConn) {
-    log.info('Releasing connection', conn.connectionId);
+    log.info("Releasing connection", conn.connectionId);
     this.inUse.delete(conn);
   }
 

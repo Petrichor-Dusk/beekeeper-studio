@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-import esbuild from 'esbuild';
-import { spawn, exec, fork } from 'child_process'
-import path from 'path';
-import _ from 'lodash'
-import fs from 'fs'
+import esbuild from "esbuild";
+import { spawn, exec, fork } from "child_process";
+import path from "path";
+import _ from "lodash";
+import fs from "fs";
 
 // NOTE: keep in sync with src/common/globals.ts -> plugins.ensureInstalled
 const ensureInstalled = [
@@ -11,37 +11,54 @@ const ensureInstalled = [
   "@beekeeperstudio/bks-er-diagram",
 ];
 
-const isWatching = process.argv[2] === 'watch';
+const isWatching = process.argv[2] === "watch";
 
 function getElectronBinary() {
-  const winLinux = path.join('../../node_modules/electron/dist/electron')
-  const mac = path.join('../../node_modules/electron/dist/Electron.app/Contents/MacOS/Electron')
-  const result = process.platform === 'darwin' ? mac : winLinux
-  return path.resolve(result)
+  const winLinux = path.join("../../node_modules/electron/dist/electron");
+  const mac = path.join(
+    "../../node_modules/electron/dist/Electron.app/Contents/MacOS/Electron"
+  );
+  const result = process.platform === "darwin" ? mac : winLinux;
+  return path.resolve(result);
 }
 
-let electronBin
+let electronBin;
 try {
-  electronBin = getElectronBinary()
-  console.log("Path to electron: ", electronBin)
+  electronBin = getElectronBinary();
+  console.log("Path to electron: ", electronBin);
 } catch (err) {
-  console.error(err)
-  throw new Error(err)
+  console.error(err);
+  throw new Error(err);
 }
 
-const externals = ['better-sqlite3', 'sqlite3',
-        'sequelize', 'reflect-metadata',
-        'cassandra-driver', 'mysql2', 'ssh2', 'mysql',
-        'oracledb', '@electron/remote', "@google-cloud/bigquery",
-        'pg-query-stream', 'electron', '@duckdb/node-api',
-        '@mongosh/browser-runtime-electron', '@mongosh/service-provider-node-driver',
-        'mongodb-client-encryption', 'sqlanywhere', 'ws', 'kerberos', 'msnodesqlv8',
-        ...ensureInstalled,
-      ]
+const externals = [
+  "better-sqlite3",
+  "sqlite3",
+  "sequelize",
+  "reflect-metadata",
+  "cassandra-driver",
+  "mysql2",
+  "ssh2",
+  "mysql",
+  "oracledb",
+  "@electron/remote",
+  "@google-cloud/bigquery",
+  "pg-query-stream",
+  "electron",
+  "@duckdb/node-api",
+  "@mongosh/browser-runtime-electron",
+  "@mongosh/service-provider-node-driver",
+  "mongodb-client-encryption",
+  "sqlanywhere",
+  "ws",
+  "kerberos",
+  "msnodesqlv8",
+  ...ensureInstalled,
+];
 
-let electron = null
+let electron = null;
 /** @type {fs.FSWatcher[]} */
-const configWatchers = {}
+const configWatchers = {};
 
 // Debounced because the main and utility builds run as separate esbuild
 // contexts (different @bksLogger alias each); their onEnd hooks both
@@ -49,59 +66,74 @@ const configWatchers = {}
 // electron restart.
 const restartElectron = _.debounce(() => {
   if (electron) {
-    process.kill(electron.pid, 'SIGINT')
+    // This is an intentional restart. Detach the old instance's exit
+    // handler first so killing it cannot tear down this watch process.
+    // (On Windows, process.kill(pid, 'SIGINT') surfaces as a null-signal
+    // exit, which the handler below would otherwise treat as a crash.)
+    const oldElectron = electron;
+    electron = null;
+    oldElectron.removeAllListeners("exit");
+    oldElectron.on("exit", (code, signal) =>
+      console.log("previous electron exited", code, signal)
+    );
+    try {
+      process.kill(oldElectron.pid, "SIGINT");
+    } catch (err) {
+      // already gone
+    }
   }
   // start electron again
-  electron = spawn(electronBin, ['.'], { stdio: 'inherit' })
-  electron.on('exit', (code, signal) => {
-    console.log('electron exited', code, signal)
-    if (!signal) process.exit()
-  })
-  console.log('spawned electron, pid: ', electron.pid)
-
-}, 500)
+  // stdin is 'ignore' so the terminal input goes to THIS watch process only
+  // (it reopens/restarts Electron on request) instead of racing with Electron.
+  electron = spawn(electronBin, ["."], {
+    stdio: ["ignore", "inherit", "inherit"],
+  });
+  electron.on("exit", (code, signal) => {
+    console.log("electron exited", code, signal);
+    if (!signal) process.exit();
+  });
+  console.log("spawned electron, pid: ", electron.pid);
+}, 500);
 
 function watchConfig(file) {
-  if (configWatchers[file]) return
+  if (configWatchers[file]) return;
   const watcher = fs.watch(file, () => {
     console.log(`Detected change in ${file}, rebuilding...`);
-    restartElectron()
-  })
-  configWatchers[file] = watcher
+    restartElectron();
+  });
+  configWatchers[file] = watcher;
 }
 
 function getElectronPlugin(name, action = () => restartElectron()) {
   return {
     name: `${name}-plugin`,
     setup(build) {
-      if (!isWatching) return
-      build.onStart(() => console.log(`ESBUILD: Building ${name}  🏗`))
+      if (!isWatching) return;
+      build.onStart(() => console.log(`ESBUILD: Building ${name}  🏗`));
       build.onEnd(() => {
-        console.log(`ESBUILD: Built ${name} ✅`)
-        action()
-        watchConfig('default.config.ini')
-        watchConfig('local.config.ini')
-        watchConfig('system.config.ini')
-      })
-    }
-  }
+        console.log(`ESBUILD: Built ${name} ✅`);
+        action();
+        watchConfig("default.config.ini");
+        watchConfig("local.config.ini");
+        watchConfig("system.config.ini");
+      });
+    },
+  };
 }
-
-
 
 const env = isWatching ? '"development"' : '"production"';
 const commonArgs = {
-  platform: 'node',
-  publicPath: '.',
-  outdir: 'dist',
+  platform: "node",
+  publicPath: ".",
+  outdir: "dist",
   bundle: true,
-  external: [...externals, '*.woff', '*.woff2', '*.ttf', '*.svg', '*.png'],
+  external: [...externals, "*.woff", "*.woff2", "*.ttf", "*.svg", "*.png"],
   sourcemap: true,
   minify: false,
   define: {
-    'process.env.NODE_ENV': env
-  }
-}
+    "process.env.NODE_ENV": env,
+  },
+};
 
 // `@bksLogger` resolves to a different file per build so each process
 // gets a logger flavored for its electron-log entry point — main+preload
@@ -109,31 +141,47 @@ const commonArgs = {
 // runs electron-log/node. The ambient declaration in src/lib/log/
 // bksLogger.d.ts keeps the IDE / tsc happy with a base-Logger type.
 const aliasFor = (loggerFile) => ({
-  '@bksLogger': path.resolve('./src/lib/log/' + loggerFile),
-})
+  "@bksLogger": path.resolve("./src/lib/log/" + loggerFile),
+});
 
 const mainArgs = {
   ...commonArgs,
-  entryPoints: ['src-commercial/entrypoints/main.ts', 'src-commercial/entrypoints/preload.ts'],
-  alias: aliasFor('mainLogger.ts'),
-  plugins: [getElectronPlugin("Main")]
-}
+  entryPoints: [
+    "src-commercial/entrypoints/main.ts",
+    "src-commercial/entrypoints/preload.ts",
+  ],
+  alias: aliasFor("mainLogger.ts"),
+  plugins: [getElectronPlugin("Main")],
+};
 
 const utilityArgs = {
   ...commonArgs,
-  entryPoints: ['src-commercial/entrypoints/utility.ts'],
-  alias: aliasFor('utilityLogger.ts'),
-  plugins: [getElectronPlugin("Utility")]
+  entryPoints: ["src-commercial/entrypoints/utility.ts"],
+  alias: aliasFor("utilityLogger.ts"),
+  plugins: [getElectronPlugin("Utility")],
+};
+
+if (isWatching) {
+  const main = await esbuild.context(mainArgs);
+  const utility = await esbuild.context(utilityArgs);
+  await Promise.all([main.watch(), utility.watch()]);
+} else {
+  await Promise.all([esbuild.build(mainArgs), esbuild.build(utilityArgs)]);
 }
 
-if(isWatching) {
-  const main = await esbuild.context(mainArgs)
-  const utility = await esbuild.context(utilityArgs)
-  await Promise.all([main.watch(), utility.watch()])
-} else {
-  await Promise.all([
-    esbuild.build(mainArgs),
-    esbuild.build(utilityArgs),
-  ])
+// Terminal shortcut: typing `o` (Enter) reopens Beekeeper by restarting
+// Electron. The dev services (this watch + vite) keep running. Requires the
+// concurrently --handle-input flag above so terminal input reaches this process.
+if (isWatching) {
+  process.stdin?.setEncoding("utf8");
+  process.stdin?.on("data", (chunk) => {
+    const lines = String(chunk)
+      .split(/\r?\n/)
+      .map((l) => l.trim().toLowerCase());
+    if (lines.includes("o")) {
+      console.log("Reopening Beekeeper window...");
+      restartElectron();
+    }
+  });
 }
 // launch electron
